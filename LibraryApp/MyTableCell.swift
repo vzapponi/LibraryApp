@@ -16,28 +16,28 @@ class MyTableCell: NSTableCellView {
         didSet{
             //if it is dark the cell is highlighted -> apply the app color to it
             if let myLayer = self.layer{
-                if backgroundStyle == .Dark{
-                    myLayer.backgroundColor = NSColor.yellowColor().CGColor
-                    txtTitolo.backgroundColor = NSColor.yellowColor()
-                    txtAutore.backgroundColor = NSColor.yellowColor()
+                if backgroundStyle == .dark{
+                    myLayer.backgroundColor = NSColor.yellow.cgColor
+                    txtTitolo.backgroundColor = NSColor.yellow
+                    txtAutore.backgroundColor = NSColor.yellow
                 }
                     //else go back to the standard color
                 else{
-                    myLayer.backgroundColor = NSColor.clearColor().CGColor
-                    txtTitolo.backgroundColor = NSColor.clearColor()
-                    txtAutore.backgroundColor = NSColor.clearColor()
+                    myLayer.backgroundColor = NSColor.clear.cgColor
+                    txtTitolo.backgroundColor = NSColor.clear
+                    txtAutore.backgroundColor = NSColor.clear
                 }
             }
         }
     }
-    override func drawRect(dirtyRect: NSRect) {
-        super.drawRect(dirtyRect)
+    override func draw(_ dirtyRect: NSRect) {
+        super.draw(dirtyRect)
         
         // Drawing code here.
         self.wantsLayer = true
         txtTitolo.font = NSFont(name: "Helvetica-Bold", size: CGFloat(14))
         txtAutore.font = NSFont(name: "Helvetica", size: CGFloat(12))
-        txtAutore.textColor = NSColor.grayColor()
+        txtAutore.textColor = NSColor.gray
     }
 
     

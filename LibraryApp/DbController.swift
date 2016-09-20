@@ -14,15 +14,23 @@ class DbController: NSObject {
     // MARK: metodi per DB
     func clearBooks(){
         print("CLEAR BOOKS --------------------->")
-        let request = NSFetchRequest(entityName: "Book")
+//        let request = NSFetchRequest(entityName: "Book")
+        var request:NSFetchRequest<Book>
+        if #available(OSX 10.12, *) {
+            request = Book.fetchRequest() as! NSFetchRequest<Book>
+        } else {
+            // Fallback on earlier versions
+            request = NSFetchRequest(entityName: "Book")
+        }
+
         request.returnsObjectsAsFaults = false
         request.includesPropertyValues = false
         do{
-            let results:NSArray = try context!.executeFetchRequest(request)
+            let results:[Book] = try context!.fetch(request)
             if results.count > 0{
                 for dsp in results{
-                    let myDsp = dsp as! Book
-                    context!.deleteObject(myDsp)
+                    let myDsp = dsp 
+                    context!.delete(myDsp)
                 }
                 do{
                     try context!.save()
@@ -37,17 +45,23 @@ class DbController: NSObject {
         }
     }
     func getBookVuoto() -> Book{
-        let entLis = NSEntityDescription.entityForName("Book", inManagedObjectContext: context!)
-        let book = Book(entity: entLis!, insertIntoManagedObjectContext: context)
+        let entLis = NSEntityDescription.entity(forEntityName: "Book", in: context!)
+        let book = Book(entity: entLis!, insertInto: context)
         return book
     }
     func findAllBooks() -> [Book]{
-        let request = NSFetchRequest(entityName: "Book")
+        var request:NSFetchRequest<Book>
+        if #available(OSX 10.12, *) {
+            request = Book.fetchRequest() as! NSFetchRequest<Book>
+        } else {
+            // Fallback on earlier versions
+            request = NSFetchRequest(entityName: "Book")
+        }
         let sortDesc:Array = [NSSortDescriptor(key: "titolo", ascending: true)]
         request.sortDescriptors = sortDesc
         var results:[Book] = []
         do{
-            results = try context!.executeFetchRequest(request) as! [Book]
+            results = try context!.fetch(request) 
             print(">>>>>>> \(results.count)")
         }
         catch{
@@ -55,8 +69,8 @@ class DbController: NSObject {
         }
         return results
     }
-    func removeBook(book: Book){
-        context!.deleteObject(book)
+    func removeBook(_ book: Book){
+        context!.delete(book)
     }
     func save() throws {
         try context.save()

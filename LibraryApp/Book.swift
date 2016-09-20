@@ -22,7 +22,7 @@ class Book: NSManagedObject {
     @NSManaged var prestatoA: String
     @NSManaged var barCode: String
     
-    func fillWithArrayOfString(arrai:[String]){
+    func fillWithArrayOfString(_ arrai:[String]){
         self.dataCreazione = arrai[0]
         self.dataModifica = arrai[1]
         self.titolo = arrai[2]
@@ -33,7 +33,7 @@ class Book: NSManagedObject {
             self.volumi = 1
         }
         else{
-            self.volumi = NSNumber(integer: Int(s)!)
+            self.volumi = NSNumber(value: Int(s)! as Int)
         }
         self.dataPrestito = arrai[6]
         self.prestatoA = arrai[7]
@@ -43,13 +43,13 @@ class Book: NSManagedObject {
         return titolo + " " + autore + " " + collocazione
     }
     
-    func fillWithBookDiMezzo(bookDiMezzo: BookDiMezzo){
+    func fillWithBookDiMezzo(_ bookDiMezzo: BookDiMezzo){
         self.dataCreazione = bookDiMezzo.dataCreazione
         self.dataModifica = bookDiMezzo.dataModifica
         self.titolo = bookDiMezzo.titolo
         self.autore = bookDiMezzo.autore
         self.collocazione = bookDiMezzo.collocazione
-        self.volumi = bookDiMezzo.volumi
+        self.volumi = bookDiMezzo.volumi as NSNumber
         self.dataPrestito = bookDiMezzo.dataPrestito
         self.prestatoA = bookDiMezzo.prestatoA
         self.barCode = bookDiMezzo.barCode

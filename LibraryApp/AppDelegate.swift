@@ -13,10 +13,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     var dbController: DbController = DbController()
     
-    func applicationDidFinishLaunching(aNotification: NSNotification) {
+    func applicationDidFinishLaunching(_ aNotification: Notification) {
         // Insert code here to initialize your application
         self.dbController.context = managedObjectContext
-        NSNotificationCenter.defaultCenter().postNotificationName(MyNotificationKeys.addObserver, object: nil)
+        NotificationCenter.default.post(name: Notification.Name(rawValue: MyNotificationKeys.addObserver), object: nil)
     }
         
     override func awakeFromNib() {
@@ -65,7 +65,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 //        }
     }
 
-    func applicationWillTerminate(aNotification: NSNotification) {
+    func applicationWillTerminate(_ aNotification: Notification) {
         // Insert code here to tear down your application
         do{
             try dbController.save()
@@ -76,22 +76,22 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     func readDataFroFile(){
         dbController.clearBooks()
-        let location = NSBundle.mainBundle().pathForResource("Libreria", ofType:"csv")
+        let location = Bundle.main.path(forResource: "Libreria", ofType:"csv")
         //"Libreria3.csv".stringByExpandingTildeInPath
         do{
-            let fileContent = try NSString(contentsOfFile: location!, encoding: NSUTF8StringEncoding)
-            let paragraf = fileContent.componentsSeparatedByString("\n")
+            let fileContent = try NSString(contentsOfFile: location!, encoding: String.Encoding.utf8.rawValue)
+            let paragraf = fileContent.components(separatedBy: "\n")
             var csvCells = [[String]]()
             var idx = 0
             for item in paragraf{
                 idx = idx+1
                 print("\(idx) \(item)")
-                csvCells.append(item.componentsSeparatedByString(";"))
+                csvCells.append(item.components(separatedBy: ";"))
             }
             for riga in csvCells{
                 var rigaCell = [String]()
                 for cell in riga{
-                    let cellRep = cell.stringByReplacingOccurrencesOfString("\"", withString: "")
+                    let cellRep = cell.replacingOccurrences(of: "\"", with: "")
                     rigaCell.append(cellRep)
                 }
                 if (rigaCell.count > 9){
@@ -122,30 +122,30 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     lazy var managedObjectModel: NSManagedObjectModel = {
         // The managed object model for the application. This property is not optional. It is a fatal error for the application not to be able to find and load its model.
-        let modelURL = NSBundle.mainBundle().URLForResource("LibraryApp", withExtension: "momd")!
-        return NSManagedObjectModel(contentsOfURL: modelURL)!
+        let modelURL = Bundle.main.url(forResource: "LibraryApp", withExtension: "momd")!
+        return NSManagedObjectModel(contentsOf: modelURL)!
     }()
     
     lazy var persistentStoreCoordinator: NSPersistentStoreCoordinator = {
         // The persistent store coordinator for the application. This implementation creates and returns a coordinator, having added the store for the application to it. This property is optional since there are legitimate error conditions that could cause the creation of the store to fail.
         // Create the coordinator and store
         let coordinator = NSPersistentStoreCoordinator(managedObjectModel: self.managedObjectModel)
-        let documentDirectory = NSFileManager.defaultManager().URLsForDirectory(NSSearchPathDirectory.DocumentDirectory, inDomains: NSSearchPathDomainMask.UserDomainMask).last! as NSURL
-        let storeUrl = documentDirectory.URLByAppendingPathComponent("it.zapponi.LibraryApp.sqlite")
+        let documentDirectory = FileManager.default.urls(for: FileManager.SearchPathDirectory.documentDirectory, in: FileManager.SearchPathDomainMask.userDomainMask).last! as URL
+        let storeUrl = documentDirectory.appendingPathComponent("it.zapponi.LibraryApp.sqlite")
         print(">>>>>>>> \(storeUrl)")
         let storeOptions = [NSPersistentStoreUbiquitousContentNameKey:"iCloud it zapponi LibraryApp",
                             NSMigratePersistentStoresAutomaticallyOption:true,
-                            NSInferMappingModelAutomaticallyOption:true]
+                            NSInferMappingModelAutomaticallyOption:true] as [String : Any]
         
         var failureReason = "There was an error creating or loading the application's saved data."
         do {
-            let store:NSPersistentStore = try coordinator.addPersistentStoreWithType(NSSQLiteStoreType, configuration: nil, URL: storeUrl, options: storeOptions)
-            print("URL REALE DA COORDINATOR >>>>>>>>>> \(store.URL)")
+            let store:NSPersistentStore = try coordinator.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: storeUrl, options: storeOptions)
+            print("URL REALE DA COORDINATOR >>>>>>>>>> \(store.url)")
         } catch {
             // Report any error we got.
             var dict = [String: AnyObject]()
-            dict[NSLocalizedDescriptionKey] = "Failed to initialize the application's saved data"
-            dict[NSLocalizedFailureReasonErrorKey] = failureReason
+            dict[NSLocalizedDescriptionKey] = "Failed to initialize the application's saved data" as AnyObject?
+            dict[NSLocalizedFailureReasonErrorKey] = failureReason as AnyObject?
             
             dict[NSUnderlyingErrorKey] = error as NSError
             let wrappedError = NSError(domain: "YOUR_ERROR_DOMAIN", code: 9999, userInfo: dict)
@@ -162,7 +162,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Returns the managed object context for the application (which is already bound to the persistent store coordinator for the application.) This property is optional since there are legitimate error conditions that could cause the creation of the context to fail.
         print("managedObjectContext")
         let coordinator = self.persistentStoreCoordinator
-        var managedObjectContext = NSManagedObjectContext(concurrencyType: .MainQueueConcurrencyType)
+        var managedObjectContext = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
         managedObjectContext.persistentStoreCoordinator = coordinator
         return managedObjectContext
     }()
@@ -183,9 +183,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    func applicationShouldTerminate(sender: NSApplication) -> NSApplicationTerminateReply {
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplicationTerminateReply {
         // If we got here, it is time to quit.
-        return .TerminateNow
+        return .terminateNow
     }
 
 }

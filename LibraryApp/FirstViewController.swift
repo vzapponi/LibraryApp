@@ -9,7 +9,7 @@
 import Cocoa
 
 class FirstViewController: NSViewController,NSTableViewDataSource,NSTableViewDelegate, NSTextFieldDelegate {
-    let appDel = NSApplication.sharedApplication().delegate as! AppDelegate
+    let appDel = NSApplication.shared().delegate as! AppDelegate
     var books:Array<Book> = []
     var filteredBooks:Array<Book> = []
     var activeSearch = false
@@ -37,23 +37,23 @@ class FirstViewController: NSViewController,NSTableViewDataSource,NSTableViewDel
     var moc:NSManagedObjectContext!
     override func viewDidLoad() {
         super.viewDidLoad()
-        vindow = NSApplication.sharedApplication().windows[0] as NSWindow
+        vindow = NSApplication.shared().windows[0] as NSWindow
         // Do view setup here.
         
-        table.selectionHighlightStyle = NSTableViewSelectionHighlightStyle.Regular
-        comboTipo.selectItemAtIndex(0)
+        table.selectionHighlightStyle = NSTableViewSelectionHighlightStyle.regular
+        comboTipo.selectItem(at: 0)
     }
     override func viewDidLayout() {
         
     }
     
-    override var representedObject: AnyObject? {
+    override var representedObject: Any? {
         didSet {
             // Update the view, if already loaded.
         }
     }
     override func viewWillAppear() {
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(initializeListener), name: MyNotificationKeys.addObserver, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(initializeListener), name: NSNotification.Name(rawValue: MyNotificationKeys.addObserver), object: nil)
         
     }
     
@@ -62,16 +62,16 @@ class FirstViewController: NSViewController,NSTableViewDataSource,NSTableViewDel
 
     }
     override func viewDidDisappear() {
-        NSNotificationCenter.defaultCenter().removeObserver(self)
+        NotificationCenter.default.removeObserver(self)
     }
     // MARK: - Persitence notification
     func initializeListener(){
         if let mocH = appDel.dbController.context{
             print("HO IL MOC")
             self.moc = mocH
-            NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(self.persisteStoreDidChange), name:NSPersistentStoreCoordinatorStoresDidChangeNotification, object: moc.persistentStoreCoordinator)
-            NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(self.persistenceStoreWillChange(_:)), name: NSPersistentStoreCoordinatorStoresWillChangeNotification, object: moc.persistentStoreCoordinator)
-            NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(self.receiveICloudChanges(_:)), name: NSPersistentStoreDidImportUbiquitousContentChangesNotification, object: moc.persistentStoreCoordinator)
+            NotificationCenter.default.addObserver(self, selector: #selector(self.persisteStoreDidChange), name:NSNotification.Name.NSPersistentStoreCoordinatorStoresDidChange, object: moc.persistentStoreCoordinator)
+            NotificationCenter.default.addObserver(self, selector: #selector(self.persistenceStoreWillChange(_:)), name: NSNotification.Name.NSPersistentStoreCoordinatorStoresWillChange, object: moc.persistentStoreCoordinator)
+            NotificationCenter.default.addObserver(self, selector: #selector(self.receiveICloudChanges(_:)), name: NSNotification.Name.NSPersistentStoreDidImportUbiquitousContentChanges, object: moc.persistentStoreCoordinator)
             statusICloud()
             reloadBooks()
         }
@@ -80,9 +80,9 @@ class FirstViewController: NSViewController,NSTableViewDataSource,NSTableViewDel
         print("persisteStoreDidChange")
 
     }
-    func persistenceStoreWillChange(notification: NSNotification){
+    func persistenceStoreWillChange(_ notification: Notification){
         print("persistenceStoreWillChange")
-        moc.performBlock{() -> Void in
+        moc.perform{() -> Void in
             if (self.moc.hasChanges){
                 do{
                     try self.appDel.dbController.save()
@@ -95,10 +95,10 @@ class FirstViewController: NSViewController,NSTableViewDataSource,NSTableViewDel
             }
         }
     }
-    func receiveICloudChanges(notification: NSNotification){
+    func receiveICloudChanges(_ notification: Notification){
         print("receiveICloudChanges")
-        moc.performBlock({() -> Void in
-            self.moc.mergeChangesFromContextDidSaveNotification(notification)
+        moc.perform({() -> Void in
+            self.moc.mergeChanges(fromContextDidSave: notification)
             self.books = self.appDel.dbController.findAllBooks()
             self.reloadBooks()
         })
@@ -111,7 +111,7 @@ class FirstViewController: NSViewController,NSTableViewDataSource,NSTableViewDel
         lblTotale.integerValue = books.count
     }
     // MARK: - Table view
-    func numberOfRowsInTableView(tableView: NSTableView) -> Int {
+    func numberOfRows(in tableView: NSTableView) -> Int {
         var nRows = 0
         if (activeSearch){
             nRows = filteredBooks.count
@@ -122,10 +122,10 @@ class FirstViewController: NSViewController,NSTableViewDataSource,NSTableViewDel
         return nRows
     }
     
-    func tableView(tableView: NSTableView, heightOfRow row: Int) -> CGFloat {
+    func tableView(_ tableView: NSTableView, heightOfRow row: Int) -> CGFloat {
         return CGFloat(48)
     }
-    func tableView(tableView: NSTableView, objectValueForTableColumn tableColumn: NSTableColumn?, row: Int) -> AnyObject? {
+    func tableView(_ tableView: NSTableView, objectValueFor tableColumn: NSTableColumn?, row: Int) -> Any? {
         if (activeSearch){
             return filteredBooks[row]
         }
@@ -133,8 +133,8 @@ class FirstViewController: NSViewController,NSTableViewDataSource,NSTableViewDel
             return books[row]
         }
     }
-    func tableView(tableView: NSTableView, viewForTableColumn tableColumn: NSTableColumn?, row: Int) -> NSView? {
-        let cell = table.makeViewWithIdentifier("cell", owner: self) as! MyTableCell
+    func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
+        let cell = table.make(withIdentifier: "cell", owner: self) as! MyTableCell
         if (activeSearch){
             cell.txtTitolo.stringValue = filteredBooks[row].titolo
             cell.txtAutore.stringValue = filteredBooks[row].autore
@@ -145,7 +145,7 @@ class FirstViewController: NSViewController,NSTableViewDataSource,NSTableViewDel
         }
         return cell
     }
-    func tableView(tableView: NSTableView, shouldSelectRow row: Int) -> Bool {
+    func tableView(_ tableView: NSTableView, shouldSelectRow row: Int) -> Bool {
         if (activeSearch){
             veroBook = filteredBooks[row]
             currentBook = BookDiMezzo(book: filteredBooks[row])
@@ -159,13 +159,13 @@ class FirstViewController: NSViewController,NSTableViewDataSource,NSTableViewDel
         return true
     }
     // MARK: Maschera
-    @IBAction func piuPressed(sender: NSButton) {
+    @IBAction func piuPressed(_ sender: NSButton) {
         veroBook = appDel.dbController.getBookVuoto()
         currentBook = BookDiMezzo()
         showDati()
-        sender.enabled = false
+        sender.isEnabled = false
     }
-    @IBAction func salva(sender: NSButton) {
+    @IBAction func salva(_ sender: NSButton) {
         saveDati()
         if let myBook = veroBook{
             myBook.fillWithBookDiMezzo(currentBook)
@@ -176,7 +176,7 @@ class FirstViewController: NSViewController,NSTableViewDataSource,NSTableViewDel
                 let myErr = error as NSError
                 let avviso = NSAlert()
                 avviso.messageText = "ERRORE NEL SALVATAGGIO"
-                avviso.alertStyle = NSAlertStyle.CriticalAlertStyle
+                avviso.alertStyle = NSAlertStyle.critical
                 var s:String = ""
                 let dic = myErr.userInfo as? Dictionary<String, AnyObject>
                 if let myDic = dic{
@@ -187,7 +187,7 @@ class FirstViewController: NSViewController,NSTableViewDataSource,NSTableViewDel
                     }
                     avviso.informativeText = s
                 }
-                avviso.beginSheetModalForWindow(vindow!, completionHandler: nil)
+                avviso.beginSheetModal(for: vindow!, completionHandler: nil)
                 return
             }
             clearDati()
@@ -198,19 +198,19 @@ class FirstViewController: NSViewController,NSTableViewDataSource,NSTableViewDel
         veroBook = nil
     }
     
-    @IBAction func reset(sender: NSButton) {
+    @IBAction func reset(_ sender: NSButton) {
         clearDati()
         table.deselectAll(self)
-        piuButt.enabled = true
+        piuButt.isEnabled = true
     }
-    @IBAction func delete(sender: NSButton) {
+    @IBAction func delete(_ sender: NSButton) {
         let avviso = NSAlert()
-        avviso.addButtonWithTitle("SI")
-        avviso.addButtonWithTitle("NO")
+        avviso.addButton(withTitle: "SI")
+        avviso.addButton(withTitle: "NO")
         avviso.messageText = "CHIEDO CONFERMA"
         avviso.informativeText = "Stai cancellando un libro!"
-        avviso.alertStyle = NSAlertStyle.CriticalAlertStyle
-        avviso.beginSheetModalForWindow(vindow!, completionHandler: {(returnCode) -> Void in
+        avviso.alertStyle = NSAlertStyle.critical
+        avviso.beginSheetModal(for: vindow!, completionHandler: {(returnCode) -> Void in
             if returnCode == NSAlertFirstButtonReturn{
                 if let myBook = self.veroBook{
                     do{
@@ -238,17 +238,17 @@ class FirstViewController: NSViewController,NSTableViewDataSource,NSTableViewDel
         txtBarcode.stringValue = ""
     }
     func saveDati(){
-        let dateForm = NSDateFormatter()
-        dateForm.locale = NSLocale.currentLocale()
+        let dateForm = DateFormatter()
+        dateForm.locale = Locale.current
         dateForm.dateFormat = "yyyy/MMM/dd HH:mm"
         currentBook.titolo = txtTitolo.stringValue
         currentBook.autore = txtAutore.stringValue
         currentBook.collocazione = txtCollocazione.stringValue
         currentBook.volumi = txtNVolumi.integerValue
         if (currentBook.dataCreazione.isEmpty){
-            currentBook.dataCreazione = dateForm.stringFromDate(NSDate())
+            currentBook.dataCreazione = dateForm.string(from: Date())
         }
-        currentBook.dataModifica = dateForm.stringFromDate(NSDate())
+        currentBook.dataModifica = dateForm.string(from: Date())
         currentBook.prestatoA = txtPrestato.stringValue
 //        if (!currentBook.prestatoA.isEmpty){
 //            currentBook.dataPrestito = dateForm.stringFromDate(NSDate())
@@ -269,14 +269,14 @@ class FirstViewController: NSViewController,NSTableViewDataSource,NSTableViewDel
     }
     // MARK: - Searchtext
 
-    override func controlTextDidChange(obj: NSNotification) {
-        let info = obj.userInfo as! [String : AnyObject]
+    override func controlTextDidChange(_ obj: Notification) {
+        let info = (obj as NSNotification).userInfo as! [String : AnyObject]
         let text = info["NSFieldEditor"] as! NSTextView
         if let myString = text.string{
             clearDati()
             if myString.isEmpty{
                 activeSearch = false
-                comboTipo.selectItemAtIndex(0)
+                comboTipo.selectItem(at: 0)
                 lblTotale.integerValue = books.count
             }
             else{
@@ -287,8 +287,8 @@ class FirstViewController: NSViewController,NSTableViewDataSource,NSTableViewDel
         }
         
     }
-    func filtraBooks(stringa: String){
-        filteredBooks.removeAll(keepCapacity: false)
+    func filtraBooks(_ stringa: String){
+        filteredBooks.removeAll(keepingCapacity: false)
         var cerca = stringa
         let idx = comboTipo.indexOfSelectedItem
         var sForPredi = ""
@@ -306,7 +306,7 @@ class FirstViewController: NSViewController,NSTableViewDataSource,NSTableViewDel
             sForPredi = "titolo BEGINSWITH[c] %@"
         }
         let searchPredicate = NSPredicate(format:sForPredi , cerca)
-        let array = (books as NSArray).filteredArrayUsingPredicate(searchPredicate)
+        let array = (books as NSArray).filtered(using: searchPredicate)
         filteredBooks = array as! [Book]
         lblTotale.integerValue = filteredBooks.count
     }
@@ -314,11 +314,11 @@ class FirstViewController: NSViewController,NSTableViewDataSource,NSTableViewDel
     func statusICloud(){
         let message = "ICloud OK!"
         let avviso = NSAlert()
-        avviso.addButtonWithTitle("OK")
+        avviso.addButton(withTitle: "OK")
         avviso.messageText = "STATUS ICLOUD"
         avviso.informativeText = message
-        avviso.alertStyle = NSAlertStyle.InformationalAlertStyle
-        avviso.beginSheetModalForWindow(self.vindow!, completionHandler: {(returnCode) -> Void in
+        avviso.alertStyle = NSAlertStyle.informational
+        avviso.beginSheetModal(for: self.vindow!, completionHandler: {(returnCode) -> Void in
         })
         
     }

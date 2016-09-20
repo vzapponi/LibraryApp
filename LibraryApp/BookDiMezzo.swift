@@ -9,7 +9,7 @@
 import Cocoa
 
 class BookDiMezzo: NSObject {
-    let dateFormatter = NSDateFormatter()
+    let dateFormatter = DateFormatter()
     var dataCreazione: String
     var dataModifica: String
     var titolo: String
@@ -20,9 +20,9 @@ class BookDiMezzo: NSObject {
     var prestatoA: String{
         didSet{
             if prestatoA != ""{
-                dateFormatter.locale = NSLocale.currentLocale()
+                dateFormatter.locale = Locale.current
                 dateFormatter.dateFormat = "yyyy/MMM/dd HH:mm"
-                dataPrestito = dateFormatter.stringFromDate(NSDate())
+                dataPrestito = dateFormatter.string(from: Date())
             }
             else{
                 dataPrestito = ""
@@ -31,10 +31,10 @@ class BookDiMezzo: NSObject {
     }
     var barCode: String
     override init(){
-        dateFormatter.locale = NSLocale.currentLocale()
+        dateFormatter.locale = Locale.current
         dateFormatter.dateFormat = "yyyy/MMM/dd HH:mm"
-        dataCreazione = dateFormatter.stringFromDate(NSDate())
-        dataModifica = dateFormatter.stringFromDate(NSDate())
+        dataCreazione = dateFormatter.string(from: Date())
+        dataModifica = dateFormatter.string(from: Date())
         titolo = ""
         autore = ""
         collocazione = ""
